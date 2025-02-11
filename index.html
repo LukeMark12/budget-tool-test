@@ -515,8 +515,14 @@ function getAIResponse(userMessage) {
     } else if (userMessage.includes("side hustle")) {
         return "Starting a side hustle can boost your income! Try freelancing, e-commerce, consulting, or investing in stocks.";
     } else if (userMessage.includes ("trading forex")){
-        return "Trading Forex can be risky but it good to start with the low capital and it have low risk then any other trading in the market and also if you know how to trade you can be award it with nice profit gain";
-    } else {
+        return "Forex trading involves buying and selling currency pairs to profit from exchange rate movements. Traders use different strategies (scalping, day trading, swing trading) and rely on technical and fundamental analysis. Managing risk with stop-loss, proper lot sizing, and a solid risk-reward ratio is crucial. Choosing a regulated broker with good execution speed and low spreads is also important.";
+    } else if (userMessage.includes ("forex trading")){
+        return "Forex trading involves buying and selling currency pairs to profit from exchange rate movements. Traders use different strategies (scalping, day trading, swing trading) and rely on technical and fundamental analysis. Managing risk with stop-loss, proper lot sizing, and a solid risk-reward ratio is crucial. Choosing a regulated broker with good execution speed and low spreads is also important.";
+    } 
+    else if (userMessage.includes ("trading")) {
+        return "Are you looking for information on stock trading, forex, crypto, or something else? Let me know what specifically you are interested in!"
+    }
+    else {
         return "I'm here to help with finance! Ask about budgeting, saving, investing, debt management, and more.";
     }
 }
