@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budgeting Tool</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #50e3c2;
+            --accent: #b8e986;
+            --background: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --income: #4caf50;
+            --expense: #f44336;
+        }
+        .dark-mode {
+            --primary: #64b5f6;
+            --secondary: #4db6ac;
+            --accent: #aed581;
+            --background: #121212;
+            --card-bg: #1e1e1e;
+            --text: #ffffff;
+            --income: #81c784;
+            --expense: #e57373;
+        }
+
+         /*ChatAi Bot SideBar */
+         #chatbot-sidebar {
+    position: fixed;
+    right: -300px;
+    top: 0;
+    width: 300px;
+    height: 100%;
+    background: var(--card-bg);
+    border-left: 2px solid var(--primary);
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: right 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+#chatbot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--primary);
+    color: white;
+}
+#chatbot-messages {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+}
+#chatbot-input {
+    width: calc(100% - 20px);
+    margin: 10px;
+    padding: 0.5rem;
+    border-radius: 5px;
+}
+#send-chatbot-message {
+    margin: 10px;
+    padding: 0.5rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+#open-chatbot {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--primary);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+
+
+
+
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--background);
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            width: 100%;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: background-color 0.3s ease;
+        }
+        h1, h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background-color: var(--card-bg);
+            color: var(--text);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #3a7bd5;
+        }
+        .summary {
+            display: flex;
+            justify-content: space-between;
+            background-color: var(--secondary);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            color: var(--text);
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .summary > div {
+            text-align: center;
+        }
+        .summary .label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        .summary .value {
+            font-size: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--accent);
+            transition: border-color 0.3s ease;
+        }
+        th {
+            background-color: var(--accent);
+            color: var(--text);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .income {
+            color: var(--income);
+        }
+        .expense {
+            color: var(--expense);
+        }
+        .delete-btn {
+            background-color: var(--expense);
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+        .delete-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+                margin: 1rem;
+            }
+
+            h1, h2 {
+                font-size: 1.6rem;
+            }
+
+            .summary {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .summary > div {
+                margin-bottom: 1rem;
+            }
+
+            input, select {
+                padding: 0.6rem;
+                font-size: 0.9rem;
+            }
+
+            button {
+                padding: 0.5rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            table th, table td {
+                padding: 0.8rem;
+                font-size: 0.9rem;
+            }
+
+            .delete-btn {
+                font-size: 0.7rem;
+                padding: 0.4rem 0.8rem;
+            }
+        }
+
+        /* Very small screens (e.g. portrait phones) */
+        @media (max-width: 480px) {
+            h1, h2 {
+                font-size: 1.4rem;
+            }
+
+            .summary .label {
+                font-size: 0.8rem;
+            }
+
+            .summary .value {
+                font-size: 1.2rem;
+            }
+
+            .delete-btn {
+                padding: 0.3rem 0.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mode-toggle">
+        <input type="checkbox" id="dark-mode-toggle">
+        <label for="dark-mode-toggle"></label>
+    </div>
+    <div class="container">
+        <button id="open-chatbot">💬 Chat with AI Advisor</button>
+        <div class="card">
+            <h1>Budgeting Tool</h1>
+            <div class="summary">
+                <div>
+                    <div class="label">Total Income</div>
+                    <div id="total-income" class="value income">$0</div>
+                </div>
+                <div>
+                    <div class="label">Total Expenses</div>
+                    <div id="total-expenses" class="value expense">$0</div>
+                </div>
+                <div>
+                    <div class="label">Remaining Budget</div>
+                    <div id="remaining-budget" class="value">$0</div>
+                </div>
+            </div>
+
+            <div id="chatbot-sidebar">
+                <div id="chatbot-header">
+                    <span>AI Financial Advisor</span>
+                    <button id="close-chatbot">❌</button>
+                </div>
+                <div id="chatbot-messages"></div>
+                <input type="text" id="chatbot-input" placeholder="Ask your financial question..." />
+                <button id="send-chatbot-message">Send</button>
+            </div>
+            
+
+            <h2>Add Transaction</h2>
+            <input type="date" id="date" required>
+            <input type="text" id="description" placeholder="Description">
+            <input type="number" id="amount" placeholder="Amount">
+            <select id="type">
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+            </select>
+            <select id="category">
+                <option value="salary">Salary</option>
+                <option value="food">Food</option>
+                <option value="rent">Rent</option>
+                <option value="utilities">Utilities</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="other">Other</option>
+            </select>
+            <button id="add-transaction">Add Transaction</button>
+            <button id="clear-all">Clear All</button>
+            <button id="view-recycle-bin">View Recycle Bin</button> <!-- Recycle Bin Button -->
+
+            <h2>Transactions</h2>
+            <table id="transactions-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Type</th>
+                        <th>Category</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const descriptionInput = document.getElementById('description');
+        const amountInput = document.getElementById('amount');
+        const typeSelect = document.getElementById('type');
+        const categorySelect = document.getElementById('category');
+        const addTransactionButton = document.getElementById('add-transaction');
+        const totalIncomeSpan = document.getElementById('total-income');
+        const totalExpensesSpan = document.getElementById('total-expenses');
+        const remainingBudgetSpan = document.getElementById('remaining-budget');
+        const transactionsTableBody = document.getElementById('transactions-table').getElementsByTagName('tbody')[0];
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const viewRecycleBinButton = document.getElementById('view-recycle-bin');
+
+        let transactions = [];
+        let totalIncome = 0;
+        let totalExpenses = 0;
+        let deletedTransactions = JSON.parse(localStorage.getItem('deletedTransactions')) || []; // Load deleted transactions
+
+        function loadTransactions() {
+            const savedTransactions = localStorage.getItem('transactions');
+            if (savedTransactions) {
+                transactions = JSON.parse(savedTransactions);
+                updateTransactionsTable();
+                updateSummary();
+            }
+        }
+
+        function saveTransactions() {
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+        }
+
+        function addTransaction() {
+            const date = document.getElementById('date').value;
+            const description = descriptionInput.value;
+            const amount = parseFloat(amountInput.value);
+            const type = typeSelect.value;
+            const category = categorySelect.value;
+
+            if (date && description && amount && !isNaN(amount)) {
+                const transaction = { id: Date.now(), date, description, amount, type, category };
+                transactions.push(transaction);
+                updateTransactionsTable();
+                updateSummary();
+                saveTransactions();
+                clearInputs();
+            } else {
+                alert('Please enter a valid date, description, and amount.');
+            }
+        }
+
+        function deleteTransaction(id) {
+            const transactionToDelete = transactions.find(t => t.id === id);
+            if (transactionToDelete) {
+                transactions = transactions.filter(t => t.id !== id);
+                deletedTransactions.push(transactionToDelete); // Save to deleted transactions
+                updateTransactionsTable();
+                updateSummary();
+                saveTransactions();
+                saveDeletedTransactions();
+            }
+        }
+
+        function saveDeletedTransactions() {
+            localStorage.setItem('deletedTransactions', JSON.stringify(deletedTransactions));
+        }
+
+        function updateTransactionsTable() {
+            transactionsTableBody.innerHTML = '';
+            transactions.forEach(transaction => {
+                const row = transactionsTableBody.insertRow();
+                row.insertCell(0).textContent = transaction.date;
+                row.insertCell(1).textContent = transaction.description;
+                row.insertCell(2).textContent = `$${transaction.amount.toFixed(2)}`;
+                row.insertCell(3).textContent = transaction.type;
+                row.insertCell(4).textContent = transaction.category;
+                const deleteCell = row.insertCell(5);
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.className = 'delete-btn';
+                deleteButton.onclick = () => deleteTransaction(transaction.id);
+                deleteCell.appendChild(deleteButton);
+                row.className = transaction.type;
+            });
+        }
+
+        function updateSummary() {
+            totalIncome = transactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+            totalExpenses = transactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+            const remainingBudget = totalIncome - totalExpenses;
+
+            totalIncomeSpan.textContent = `$${totalIncome.toFixed(2)}`;
+            totalExpensesSpan.textContent = `$${totalExpenses.toFixed(2)}`;
+            remainingBudgetSpan.textContent = `$${remainingBudget.toFixed(2)}`;
+            remainingBudgetSpan.className = remainingBudget >= 0 ? 'income' : 'expense';
+        }
+
+        function clearInputs() {
+            document.getElementById('date').value = '';
+            descriptionInput.value = '';
+            amountInput.value = '';
+            typeSelect.value = 'income';
+            categorySelect.value = 'salary';
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        function loadDarkModePreference() {
+            const darkMode = localStorage.getItem('darkMode');
+            if (darkMode === 'true') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+        }
+
+        function clearAll() {
+            if (confirm('Are you sure you want to delete all transactions?')) {
+                transactions = [];
+                updateTransactionsTable();
+                updateSummary();
+                saveTransactions();
+            }
+        }
+
+        function goToRecycleBin() {
+            window.location.href = "RecycleBin.html"; // Navigate to RecycleBin page
+        }
+
+        addTransactionButton.addEventListener('click', addTransaction);
+        darkModeToggle.addEventListener('change', toggleDarkMode);
+        document.getElementById('clear-all').addEventListener('click', clearAll);
+        viewRecycleBinButton.addEventListener('click', goToRecycleBin); // Recycle Bin Button event
+
+        // Load saved transactions and dark mode preference when the page loads
+        loadTransactions();
+        loadDarkModePreference();
+
+        document.getElementById("open-chatbot").addEventListener("click", () => {
+    document.getElementById("chatbot-sidebar").style.right = "0";
+});
+document.getElementById("close-chatbot").addEventListener("click", () => {
+    document.getElementById("chatbot-sidebar").style.right = "-300px";
+});
+document.getElementById("send-chatbot-message").addEventListener("click", () => {
+    const input = document.getElementById("chatbot-input");
+    const message = input.value.trim();
+    if (!message) return;
+    
+    addMessage("You", message);
+    input.value = "";
+    
+    // Simulating AI Response
+    setTimeout(() => {
+        const response = getAIResponse(message);
+        addMessage("AI Advisor", response);
+    }, 1000);
+});
+
+function addMessage(sender, text) {
+    const messageDiv = document.createElement("div");
+    messageDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+    document.getElementById("chatbot-messages").appendChild(messageDiv);
+}
+
+function getAIResponse(userMessage) {
+    userMessage = userMessage.toLowerCase();
+
+    if (userMessage.includes("save money")) {
+        return "A good rule of thumb is to save at least 20% of your income. You can also try automating your savings for consistency.";
+    } else if (userMessage.includes("budget")) {
+        return "Try the 50/30/20 rule: 50% for needs, 30% for wants, and 20% for savings. If you're struggling, focus on cutting unnecessary expenses.";
+    } else if (userMessage.includes("invest")) {
+        return "Investing early is key! Consider index funds, real estate, or retirement accounts like a 401(k) or Roth IRA.";
+    } else if (userMessage.includes("credit score")) {
+        return "Your credit score is crucial for financial health. Pay bills on time, keep credit utilization low, and avoid unnecessary debt.";
+    } else if (userMessage.includes("debt")) {
+        return "Prioritize high-interest debt first (e.g., credit cards). The Snowball or Avalanche method can help you become debt-free faster.";
+    } else if (userMessage.includes("retirement")) {
+        return "Start contributing to a retirement account like a 401(k) or IRA as early as possible. Compounding interest will grow your savings!";
+    } else if (userMessage.includes("taxes")) {
+        return "Tax planning can save you money! Consider tax-advantaged accounts like HSAs, 401(k)s, and IRAs to reduce taxable income.";
+    } else if (userMessage.includes("emergency fund")) {
+        return "Aim for 3-6 months' worth of living expenses in an emergency fund. This protects you from unexpected financial shocks.";
+    } else if (userMessage.includes("side hustle")) {
+        return "Starting a side hustle can boost your income! Try freelancing, e-commerce, consulting, or investing in stocks.";
+    } else {
+        return "I'm here to help with finance! Ask about budgeting, saving, investing, debt management, and more.";
+    }
+}
+
+    </script>
+</body>
+</html>

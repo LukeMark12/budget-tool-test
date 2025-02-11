@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recycle Bin</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #50e3c2;
+            --accent: #b8e986;
+            --background: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --income: #4caf50;
+            --expense: #f44336;
+        }
+        .dark-mode {
+            --primary: #64b5f6;
+            --secondary: #4db6ac;
+            --accent: #aed581;
+            --background: #121212;
+            --card-bg: #1e1e1e;
+            --text: #ffffff;
+            --income: #81c784;
+            --expense: #e57373;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--background);
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: background-color 0.3s ease;
+        }
+        h1, h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--accent);
+            transition: border-color 0.3s ease;
+        }
+        th {
+            background-color: var(--accent);
+            color: var(--text);
+        }
+        .income {
+            color: var(--income);
+        }
+        .expense {
+            color: var(--expense);
+        }
+        .button {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin: 0.5rem;
+            text-align: center;
+        }
+        .button:hover {
+            background-color: #3a7bd5;
+        }
+        .restore-btn {
+            background-color: #81c784;
+        }
+        .restore-btn:hover {
+            background-color: #66bb6a;
+        }
+        .delete-btn {
+            background-color: #e57373;
+        }
+        .delete-btn:hover {
+            background-color: #f44336;
+        }
+        .mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            border-radius: 5px;
+        }
+        .mode-toggle:hover {
+            background-color: #3a7bd5;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            .card {
+                padding: 1.5rem;
+            }
+            table th, table td {
+                padding: 0.8rem;
+            }
+            .button {
+                font-size: 0.85rem;
+            }
+            .mode-toggle {
+                font-size: 0.9rem;
+                padding: 8px 16px;
+            }
+        }
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            h2 {
+                font-size: 1.2rem;
+            }
+            .button {
+                width: 100%;
+                font-size: 1rem;
+                padding: 0.75rem;
+            }
+            table th, table td {
+                padding: 0.5rem;
+            }
+            .mode-toggle {
+                top: 10px;
+                right: 10px;
+                font-size: 0.85rem;
+                padding: 6px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="mode-toggle" onclick="toggleDarkMode()">Switch to Dark Mode</button>
+    <div class="container">
+        <div class="card">
+            <h1>Recycle Bin</h1>
+            <h2>Deleted Transactions</h2>
+            <table id="deleted-transactions-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Type</th>
+                        <th>Category</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button onclick="goBack()" class="button">Back to Dashboard</button>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode toggle function
+        function toggleDarkMode() {
+            const body = document.body;
+            const button = document.querySelector('.mode-toggle');
+
+            // Toggle dark mode class on the body
+            body.classList.toggle('dark-mode');
+
+            // Update button text depending on the mode
+            if (body.classList.contains('dark-mode')) {
+                button.textContent = "Switch to Light Mode";
+                localStorage.setItem('theme', 'dark');
+            } else {
+                button.textContent = "Switch to Dark Mode";
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Check localStorage for theme preference and apply
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.querySelector('.mode-toggle').textContent = "Switch to Light Mode";
+        }
+
+        const deletedTransactionsTableBody = document.getElementById('deleted-transactions-table').getElementsByTagName('tbody')[0];
+
+        // Get deleted transactions from localStorage
+        let deletedTransactions = JSON.parse(localStorage.getItem('deletedTransactions')) || [];
+
+        // Function to restore a deleted transaction
+        function restoreTransaction(id) {
+            // Find the transaction to restore
+            const transactionToRestore = deletedTransactions.find(t => t.id === id);
+            if (transactionToRestore) {
+                // Restore the transaction by removing it from deleted transactions and adding it back to the main list
+                const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+                transactions.push(transactionToRestore);
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+
+                // Remove from deleted transactions and update localStorage
+                deletedTransactions = deletedTransactions.filter(t => t.id !== id);
+                localStorage.setItem('deletedTransactions', JSON.stringify(deletedTransactions));
+
+                // Update the UI
+                updateDeletedTransactionsTable();
+            }
+        }
+
+        // Function to permanently delete a transaction
+        function deleteTransactionPermanently(id) {
+            // Remove from deleted transactions and update localStorage
+            deletedTransactions = deletedTransactions.filter(t => t.id !== id);
+            localStorage.setItem('deletedTransactions', JSON.stringify(deletedTransactions));
+
+            // Update the UI
+            updateDeletedTransactionsTable();
+        }
+
+        // Function to update the table displaying deleted transactions
+        function updateDeletedTransactionsTable() {
+            deletedTransactionsTableBody.innerHTML = '';
+            deletedTransactions.forEach(transaction => {
+                const row = deletedTransactionsTableBody.insertRow();
+                row.insertCell(0).textContent = transaction.date;
+                row.insertCell(1).textContent = transaction.description;
+                row.insertCell(2).textContent = `$${transaction.amount.toFixed(2)}`;
+                row.insertCell(3).textContent = transaction.type;
+                row.insertCell(4).textContent = transaction.category;
+
+                const actionCell = row.insertCell(5);
+                
+                const restoreButton = document.createElement('button');
+                restoreButton.textContent = 'Restore';
+                restoreButton.className = 'button restore-btn';
+                restoreButton.onclick = () => restoreTransaction(transaction.id);
+                
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete Permanently';
+                deleteButton.className = 'button delete-btn';
+                deleteButton.onclick = () => deleteTransactionPermanently(transaction.id);
+                
+                actionCell.appendChild(restoreButton);
+                actionCell.appendChild(deleteButton);
+                
+                row.className = transaction.type;
+            });
+        }
+
+        // Function to go back to the main dashboard
+        function goBack() {
+            window.location.href = "index.html"; // Adjust this path if necessary
+        }
+
+        // Update the table when the page loads
+        updateDeletedTransactionsTable();
+    </script>
+</body>
+</html>
