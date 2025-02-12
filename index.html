@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Budgeting Tool</title>
     <style>
+
         :root {
             --primary: #4a90e2;
             --secondary: #50e3c2;
@@ -29,7 +30,7 @@
          /*ChatAi Bot SideBar */
          #chatbot-sidebar {
     position: fixed;
-    right: -300px;
+    right: 00px;
     top: 0;
     width: 300px;
     height: 100%;
@@ -71,16 +72,26 @@
 #open-chatbot {
     position: fixed;
     bottom: 20px;
-    right: 20px;
+    /*right: 20px; */
+    left: 20px;
     background: var(--primary);
     color: white;
     padding: 10px 15px;
     border-radius: 5px;
     cursor: pointer;
 }
-
-
-
+/* Fullscreen Mode */
+#chatbot-sidebar.fullscreen {
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: 0;
+    z-index: 9999;
+    box-shadow: none;
+}
 
 
 
@@ -276,6 +287,7 @@
             </div>
 
             <div id="chatbot-sidebar">
+                <button id="toggle-fullscreen">Fullscreen</button>
                 <div id="chatbot-header">
                     <span>AI Financial Advisor</span>
                     <button id="close-chatbot">❌</button>
@@ -325,154 +337,155 @@
 
     <script>
         const descriptionInput = document.getElementById('description');
-        const amountInput = document.getElementById('amount');
-        const typeSelect = document.getElementById('type');
-        const categorySelect = document.getElementById('category');
-        const addTransactionButton = document.getElementById('add-transaction');
-        const totalIncomeSpan = document.getElementById('total-income');
-        const totalExpensesSpan = document.getElementById('total-expenses');
-        const remainingBudgetSpan = document.getElementById('remaining-budget');
-        const transactionsTableBody = document.getElementById('transactions-table').getElementsByTagName('tbody')[0];
-        const darkModeToggle = document.getElementById('dark-mode-toggle');
-        const viewRecycleBinButton = document.getElementById('view-recycle-bin');
+const amountInput = document.getElementById('amount');
+const typeSelect = document.getElementById('type');
+const categorySelect = document.getElementById('category');
+const addTransactionButton = document.getElementById('add-transaction');
+const totalIncomeSpan = document.getElementById('total-income');
+const totalExpensesSpan = document.getElementById('total-expenses');
+const remainingBudgetSpan = document.getElementById('remaining-budget');
+const transactionsTableBody = document.getElementById('transactions-table').getElementsByTagName('tbody')[0];
+const darkModeToggle = document.getElementById('dark-mode-toggle');
+const viewRecycleBinButton = document.getElementById('view-recycle-bin');
 
-        let transactions = [];
-        let totalIncome = 0;
-        let totalExpenses = 0;
-        let deletedTransactions = JSON.parse(localStorage.getItem('deletedTransactions')) || []; // Load deleted transactions
+let transactions = [];
+let totalIncome = 0;
+let totalExpenses = 0;
+let deletedTransactions = JSON.parse(localStorage.getItem('deletedTransactions')) || []; // Load deleted transactions
 
-        function loadTransactions() {
-            const savedTransactions = localStorage.getItem('transactions');
-            if (savedTransactions) {
-                transactions = JSON.parse(savedTransactions);
-                updateTransactionsTable();
-                updateSummary();
-            }
-        }
+function loadTransactions() {
+    const savedTransactions = localStorage.getItem('transactions');
+    if (savedTransactions) {
+        transactions = JSON.parse(savedTransactions);
+        updateTransactionsTable();
+        updateSummary();
+    }
+}
 
-        function saveTransactions() {
-            localStorage.setItem('transactions', JSON.stringify(transactions));
-        }
+function saveTransactions() {
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+}
 
-        function addTransaction() {
-            const date = document.getElementById('date').value;
-            const description = descriptionInput.value;
-            const amount = parseFloat(amountInput.value);
-            const type = typeSelect.value;
-            const category = categorySelect.value;
+function addTransaction() {
+    const date = document.getElementById('date').value;
+    const description = descriptionInput.value;
+    const amount = parseFloat(amountInput.value);
+    const type = typeSelect.value;
+    const category = categorySelect.value;
 
-            if (date && description && amount && !isNaN(amount)) {
-                const transaction = { id: Date.now(), date, description, amount, type, category };
-                transactions.push(transaction);
-                updateTransactionsTable();
-                updateSummary();
-                saveTransactions();
-                clearInputs();
-            } else {
-                alert('Please enter a valid date, description, and amount.');
-            }
-        }
+    if (date && description && amount && !isNaN(amount)) {
+        const transaction = { id: Date.now(), date, description, amount, type, category };
+        transactions.push(transaction);
+        updateTransactionsTable();
+        updateSummary();
+        saveTransactions();
+        clearInputs();
+    } else {
+        alert('Please enter a valid date, description, and amount.');
+    }
+}
 
-        function deleteTransaction(id) {
-            const transactionToDelete = transactions.find(t => t.id === id);
-            if (transactionToDelete) {
-                transactions = transactions.filter(t => t.id !== id);
-                deletedTransactions.push(transactionToDelete); // Save to deleted transactions
-                updateTransactionsTable();
-                updateSummary();
-                saveTransactions();
-                saveDeletedTransactions();
-            }
-        }
+function deleteTransaction(id) {
+    const transactionToDelete = transactions.find(t => t.id === id);
+    if (transactionToDelete) {
+        transactions = transactions.filter(t => t.id !== id);
+        deletedTransactions.push(transactionToDelete); // Save to deleted transactions
+        updateTransactionsTable();
+        updateSummary();
+        saveTransactions();
+        saveDeletedTransactions();
+    }
+}
 
-        function saveDeletedTransactions() {
-            localStorage.setItem('deletedTransactions', JSON.stringify(deletedTransactions));
-        }
+function saveDeletedTransactions() {
+    localStorage.setItem('deletedTransactions', JSON.stringify(deletedTransactions));
+}
 
-        function updateTransactionsTable() {
-            transactionsTableBody.innerHTML = '';
-            transactions.forEach(transaction => {
-                const row = transactionsTableBody.insertRow();
-                row.insertCell(0).textContent = transaction.date;
-                row.insertCell(1).textContent = transaction.description;
-                row.insertCell(2).textContent = `$${transaction.amount.toFixed(2)}`;
-                row.insertCell(3).textContent = transaction.type;
-                row.insertCell(4).textContent = transaction.category;
-                const deleteCell = row.insertCell(5);
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.className = 'delete-btn';
-                deleteButton.onclick = () => deleteTransaction(transaction.id);
-                deleteCell.appendChild(deleteButton);
-                row.className = transaction.type;
-            });
-        }
+function updateTransactionsTable() {
+    transactionsTableBody.innerHTML = '';
+    transactions.forEach(transaction => {
+        const row = transactionsTableBody.insertRow();
+        row.insertCell(0).textContent = transaction.date;
+        row.insertCell(1).textContent = transaction.description;
+        row.insertCell(2).textContent = `$${transaction.amount.toFixed(2)}`;
+        row.insertCell(3).textContent = transaction.type;
+        row.insertCell(4).textContent = transaction.category;
+        const deleteCell = row.insertCell(5);
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.className = 'delete-btn';
+        deleteButton.onclick = () => deleteTransaction(transaction.id);
+        deleteCell.appendChild(deleteButton);
+        row.className = transaction.type;
+    });
+}
 
-        function updateSummary() {
-            totalIncome = transactions
-                .filter(t => t.type === 'income')
-                .reduce((sum, t) => sum + t.amount, 0);
-            totalExpenses = transactions
-                .filter(t => t.type === 'expense')
-                .reduce((sum, t) => sum + t.amount, 0);
-            const remainingBudget = totalIncome - totalExpenses;
+function updateSummary() {
+    totalIncome = transactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + t.amount, 0);
+    totalExpenses = transactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
+    const remainingBudget = totalIncome - totalExpenses;
 
-            totalIncomeSpan.textContent = `$${totalIncome.toFixed(2)}`;
-            totalExpensesSpan.textContent = `$${totalExpenses.toFixed(2)}`;
-            remainingBudgetSpan.textContent = `$${remainingBudget.toFixed(2)}`;
-            remainingBudgetSpan.className = remainingBudget >= 0 ? 'income' : 'expense';
-        }
+    totalIncomeSpan.textContent = `$${totalIncome.toFixed(2)}`;
+    totalExpensesSpan.textContent = `$${totalExpenses.toFixed(2)}`;
+    remainingBudgetSpan.textContent = `$${remainingBudget.toFixed(2)}`;
+    remainingBudgetSpan.className = remainingBudget >= 0 ? 'income' : 'expense';
+}
 
-        function clearInputs() {
-            document.getElementById('date').value = '';
-            descriptionInput.value = '';
-            amountInput.value = '';
-            typeSelect.value = 'income';
-            categorySelect.value = 'salary';
-        }
+function clearInputs() {
+    document.getElementById('date').value = '';
+    descriptionInput.value = '';
+    amountInput.value = '';
+    typeSelect.value = 'income';
+    categorySelect.value = 'salary';
+}
 
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-        }
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+}
 
-        function loadDarkModePreference() {
-            const darkMode = localStorage.getItem('darkMode');
-            if (darkMode === 'true') {
-                document.body.classList.add('dark-mode');
-                darkModeToggle.checked = true;
-            }
-        }
+function loadDarkModePreference() {
+    const darkMode = localStorage.getItem('darkMode');
+    if (darkMode === 'true') {
+        document.body.classList.add('dark-mode');
+        darkModeToggle.checked = true;
+    }
+}
 
-        function clearAll() {
-            if (confirm('Are you sure you want to delete all transactions?')) {
-                transactions = [];
-                updateTransactionsTable();
-                updateSummary();
-                saveTransactions();
-            }
-        }
+function clearAll() {
+    if (confirm('Are you sure you want to delete all transactions?')) {
+        transactions = [];
+        updateTransactionsTable();
+        updateSummary();
+        saveTransactions();
+    }
+}
 
-        function goToRecycleBin() {
-            window.location.href = "RecycleBin.html"; // Navigate to RecycleBin page
-        }
+function goToRecycleBin() {
+    window.location.href = "RecycleBin.html"; // Navigate to RecycleBin page
+}
 
-        addTransactionButton.addEventListener('click', addTransaction);
-        darkModeToggle.addEventListener('change', toggleDarkMode);
-        document.getElementById('clear-all').addEventListener('click', clearAll);
-        viewRecycleBinButton.addEventListener('click', goToRecycleBin); // Recycle Bin Button event
+addTransactionButton.addEventListener('click', addTransaction);
+darkModeToggle.addEventListener('change', toggleDarkMode);
+document.getElementById('clear-all').addEventListener('click', clearAll);
+viewRecycleBinButton.addEventListener('click', goToRecycleBin); // Recycle Bin Button event
 
-        // Load saved transactions and dark mode preference when the page loads
-        loadTransactions();
-        loadDarkModePreference();
+// Load saved transactions and dark mode preference when the page loads
+loadTransactions();
+loadDarkModePreference();
 
-        document.getElementById("open-chatbot").addEventListener("click", () => {
+// Chatbot Sidebar Toggle
+document.getElementById("open-chatbot").addEventListener("click", () => {
     document.getElementById("chatbot-sidebar").style.right = "0";
 });
 document.getElementById("close-chatbot").addEventListener("click", () => {
     document.getElementById("chatbot-sidebar").style.right = "-300px";
 });
-document.getElementById("send-chatbot-message").addEventListener("click", () => {
+document.getElementById("send-chatbot-message").addEventListener("click", async () => {
     const input = document.getElementById("chatbot-input");
     const message = input.value.trim();
     if (!message) return;
@@ -480,12 +493,35 @@ document.getElementById("send-chatbot-message").addEventListener("click", () => 
     addMessage("You", message);
     input.value = "";
     
-    // Simulating AI Response
-    setTimeout(() => {
-        const response = getAIResponse(message);
-        addMessage("AI Advisor", response);
-    }, 1000);
+    // Fetch AI response from API
+    const response = await fetchAIResponse(message);
+    addMessage("AI Advisor", response);
 });
+
+async function fetchAIResponse(userMessage) {
+    const API_KEY = "LC8lMwo5ssPAEcwmaN7aR3Q0230rQX5h"; // Replace with your actual API key
+    const API_URL = "https://api.mistral.ai/v1/chat/completions";
+
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "mistral-tiny", // Free model, you can change it
+                messages: [{ role: "user", content: userMessage }]
+            })
+        });
+
+        const data = await response.json();
+        return data.choices[0].message.content;
+    } catch (error) {
+        console.error("Error:", error);
+        return "Sorry, I couldn't fetch a response. Try again later!";
+    }
+}
 
 function addMessage(sender, text) {
     const messageDiv = document.createElement("div");
@@ -493,40 +529,37 @@ function addMessage(sender, text) {
     document.getElementById("chatbot-messages").appendChild(messageDiv);
 }
 
-function getAIResponse(userMessage) {
-    userMessage = userMessage.toLowerCase();
+document.getElementById("toggle-fullscreen").addEventListener("click", function () {
+    const chatbotSidebar = document.getElementById("chatbot-sidebar");
 
-    if (userMessage.includes("save money")) {
-        return "A good rule of thumb is to save at least 20% of your income. You can also try automating your savings for consistency.";
-    } else if (userMessage.includes("budget")) {
-        return "Try the 50/30/20 rule: 50% for needs, 30% for wants, and 20% for savings. If you're struggling, focus on cutting unnecessary expenses.";
-    } else if (userMessage.includes("invest")) {
-        return "Investing early is key! Consider index funds, real estate, or retirement accounts like a 401(k) or Roth IRA.";
-    } else if (userMessage.includes("credit score")) {
-        return "Your credit score is crucial for financial health. Pay bills on time, keep credit utilization low, and avoid unnecessary debt.";
-    } else if (userMessage.includes("debt")) {
-        return "Prioritize high-interest debt first (e.g., credit cards). The Snowball or Avalanche method can help you become debt-free faster.";
-    } else if (userMessage.includes("retirement")) {
-        return "Start contributing to a retirement account like a 401(k) or IRA as early as possible. Compounding interest will grow your savings!";
-    } else if (userMessage.includes("taxes")) {
-        return "Tax planning can save you money! Consider tax-advantaged accounts like HSAs, 401(k)s, and IRAs to reduce taxable income.";
-    } else if (userMessage.includes("emergency fund")) {
-        return "Aim for 3-6 months' worth of living expenses in an emergency fund. This protects you from unexpected financial shocks.";
-    } else if (userMessage.includes("side hustle")) {
-        return "Starting a side hustle can boost your income! Try freelancing, e-commerce, consulting, or investing in stocks.";
-    } else if (userMessage.includes ("trading forex")){
-        return "Forex trading involves buying and selling currency pairs to profit from exchange rate movements. Traders use different strategies (scalping, day trading, swing trading) and rely on technical and fundamental analysis. Managing risk with stop-loss, proper lot sizing, and a solid risk-reward ratio is crucial. Choosing a regulated broker with good execution speed and low spreads is also important.";
-    } else if (userMessage.includes ("forex trading")){
-        return "Forex trading involves buying and selling currency pairs to profit from exchange rate movements. Traders use different strategies (scalping, day trading, swing trading) and rely on technical and fundamental analysis. Managing risk with stop-loss, proper lot sizing, and a solid risk-reward ratio is crucial. Choosing a regulated broker with good execution speed and low spreads is also important.";
-    } 
-    else if (userMessage.includes ("trading")) {
-        return "Are you looking for information on stock trading, forex, crypto, or something else? Let me know what specifically you are interested in!"
+    // Toggle fullscreen class
+    chatbotSidebar.classList.toggle("fullscreen");
+
+    // Change button text
+    if (chatbotSidebar.classList.contains("fullscreen")) {
+        this.innerText = "Exit Fullscreen";
+    } else {
+        this.innerText = "Fullscreen";
     }
-    else {
-        return "I'm here to help with finance! Ask about budgeting, saving, investing, debt management, and more.";
-    }
-}
+});
+
+
+
 
     </script>
+
+    <!--Live support chat-->
+<script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/67ac910a825083258e141b18/1ijt1d4ir';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+    })();
+    </script>
+    <!--Live support chat -->
 </body>
 </html>
