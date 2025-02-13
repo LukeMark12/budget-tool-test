@@ -416,6 +416,109 @@ th {
         padding: 0.5rem 1rem;
     }
 }
+/*side bar menu*/
+
+#side-menu-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #4a90e2; /* Or your primary color */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+#side-menu-button:hover {
+    background-color: #3a7bd5; /* Darker shade on hover */
+}
+
+#side-menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 280px; /* Slightly wider */
+    height: 100%;
+    background-color: #fff; /* White background */
+    border-left: 1px solid #eee; /* Light gray border */
+    z-index: 1001;
+    padding: 20px;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    background: var(--card-bg);
+}
+
+#side-menu.show {
+    transform: translateX(0);
+}
+
+#side-menu-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+#close-side-menu {
+    background: none;
+    border: none;
+    font-size: 24px; /* Larger close icon */
+    cursor: pointer;
+    padding: 5px;
+    color: #777; /* Gray color */
+    transition: color 0.3s ease; /* Smooth hover effect */
+}
+
+#close-side-menu:hover {
+    color: #333; /* Darker gray on hover */
+}
+
+#side-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#side-menu li {
+    margin-bottom: 10px;
+}
+
+#side-menu a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+    padding: 10px 15px; /* More padding */
+    border-radius: 5px;
+    transition: background-color 0.2s ease, color 0.2s ease; /* Smooth transitions */
+}
+
+#side-menu a:hover {
+    background-color: #eee; /* Light gray hover */
+    color: #000; /* Black text on hover */
+}
+
+#overlay {
+    /* ... (No changes needed) ... */
+}
+
+/* Media query (adjust as needed) */
+@media (max-width: 768px) {
+    #side-menu-button {
+        /* ... (Adjust button styles for smaller screens) ... */
+    }
+
+    #side-menu {
+        width: 90%; /* Take up more width on smaller screens */
+    }
+
+    /* ... (Other media query styles) ... */
+}
+
     </style>
 </head>
 <body>
@@ -424,7 +527,6 @@ th {
         <label for="dark-mode-toggle"></label>
     </div>
     <div class="container">
-        <button id="open-chatbot">💬 Chat with AI Advisor</button>
         <div class="card">
             <h1>Budgeting Tool</h1>
             <div class="summary">
@@ -442,16 +544,7 @@ th {
                 </div>
             </div>
 
-            <div id="chatbot-sidebar">
-                <button id="toggle-fullscreen">Fullscreen</button>
-                <div id="chatbot-header">
-                    <span>AI Financial Advisor</span>
-                    <button id="close-chatbot">❌</button>
-                </div>
-                <div id="chatbot-messages"></div>
-                <input type="text" id="chatbot-input" placeholder="Ask your financial question..." />
-                <button id="send-chatbot-message">Send</button>
-            </div>
+            
             
 
             <h2>Add Transaction</h2>
@@ -489,6 +582,24 @@ th {
                 <tbody></tbody>
             </table>
         </div>
+        <button id="side-menu-button">☰ Menu</button>
+
+    <div id="side-menu">
+        <div id="side-menu-header">
+            <button id="close-side-menu">×</button>
+        </div>
+        <ul id="side-menu-items">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="Transactions.html">Transactions</a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Settings</a></li>
+            <li><a href="RecycleBin.html">View Recycle Bin</a></li>  <li><a href="AiAdvisor.html">Chat with AI Advisor</a></li>      <li><a href="#logout">Logout</a></li>
+        </ul>
+    </div>
+
+    <div id="overlay"></div>  </body>
+
+
     </div>
 
     <script>
@@ -634,75 +745,46 @@ viewRecycleBinButton.addEventListener('click', goToRecycleBin); // Recycle Bin B
 loadTransactions();
 loadDarkModePreference();
 
-// Chatbot Sidebar Toggle
-document.getElementById("open-chatbot").addEventListener("click", () => {
-    document.getElementById("chatbot-sidebar").style.right = "0";
-});
-document.getElementById("close-chatbot").addEventListener("click", () => {
-    document.getElementById("chatbot-sidebar").style.right = "-300px";
-});
-document.getElementById("send-chatbot-message").addEventListener("click", async () => {
-    const input = document.getElementById("chatbot-input");
-    const message = input.value.trim();
-    if (!message) return;
-    
-    addMessage("You", message);
-    input.value = "";
-    
-    // Fetch AI response from API
-    const response = await fetchAIResponse(message);
-    addMessage("AI Advisor", response);
-});
-
-async function fetchAIResponse(userMessage) {
-    const API_KEY = "LC8lMwo5ssPAEcwmaN7aR3Q0230rQX5h"; // Replace with your actual API key
-    const API_URL = "https://api.mistral.ai/v1/chat/completions";
-
-    try {
-        const response = await fetch(API_URL, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${API_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: "mistral-tiny", // Free model, you can change it
-                messages: [{ role: "user", content: userMessage }]
-            })
-        });
-
-        const data = await response.json();
-        return data.choices[0].message.content;
-    } catch (error) {
-        console.error("Error:", error);
-        return "Sorry, I couldn't fetch a response. Try again later!";
-    }
-}
-
-function addMessage(sender, text) {
-    const messageDiv = document.createElement("div");
-    messageDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
-    document.getElementById("chatbot-messages").appendChild(messageDiv);
-}
-
-document.getElementById("toggle-fullscreen").addEventListener("click", function () {
-    const chatbotSidebar = document.getElementById("chatbot-sidebar");
-
-    // Toggle fullscreen class
-    chatbotSidebar.classList.toggle("fullscreen");
-
-    // Change button text
-    if (chatbotSidebar.classList.contains("fullscreen")) {
-        this.innerText = "Exit Fullscreen";
-    } else {
-        this.innerText = "Fullscreen";
-    }
-});
-
 /*live support chat*/
 window.intercomSettings = {
       app_id: 'lq2w7awy'
    };
+
+
+   /*side menu button*/
+   const sideMenuButton = document.getElementById('side-menu-button'); // Menu code
+        const sideMenu = document.getElementById('side-menu');
+        const closeSideMenuButton = document.getElementById('close-side-menu');
+        const sideMenuItems = document.getElementById('side-menu-items');
+        const overlay = document.getElementById('overlay');
+
+        sideMenuButton.addEventListener('click', () => {
+            sideMenu.classList.add('show');
+            overlay.classList.add('show');
+        });
+
+        closeSideMenuButton.addEventListener('click', () => {
+            sideMenu.classList.remove('show');
+            overlay.classList.remove('show');
+        });
+
+        overlay.addEventListener('click', () => {
+            sideMenu.classList.remove('show');
+            overlay.classList.remove('show');
+        });
+
+        // Logout functionality (make sure Firebase is initialized)
+        const logoutLink = sideMenuItems.querySelector('a[href="#logout"]');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                auth.signOut().then(() => {
+                    window.location.href = "auth.html";
+                }).catch((error) => {
+                    console.error("Error signing out:", error);
+                });
+            });
+        }
     </script>
     <script>(function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',intercomSettings);}else{var d=document;s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/YOUR_APP_ID';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);}})();</script>
 </body>
