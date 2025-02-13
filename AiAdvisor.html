@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Financial Advisor</title>
+    <style>
+        /* Basic styling for the chat interface */
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0; /* Light background */
+        }
+
+        #chat-container {
+            width: 80%;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+        }
+
+        #chat-messages {
+            height: 300px; /* Adjust as needed */
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .user-message {
+            background-color: #e0f2f7; /* Light blue for user */
+            text-align: right; /* Align user messages to the right */
+        }
+
+        .ai-message {
+            background-color: #f5f5f5; /* Light gray for AI */
+            text-align: left; /* Align AI messages to the left */
+        }
+
+        #chat-input {
+            width: calc(100% - 80px); /* Adjust for button width */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        #send-button {
+            width: 70px;
+            padding: 10px;
+            background-color: #4a90e2; /* Or your primary color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #side-menu-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #4a90e2; /* Or your primary color */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+#side-menu-button:hover {
+    background-color: #3a7bd5; /* Darker shade on hover */
+}
+
+#side-menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 280px; /* Slightly wider */
+    height: 100%;
+    background-color: #fff; /* White background */
+    border-left: 1px solid #eee; /* Light gray border */
+    z-index: 1001;
+    padding: 20px;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    background: var(--card-bg);
+}
+
+#side-menu.show {
+    transform: translateX(0);
+}
+
+#side-menu-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+#close-side-menu {
+    background: none;
+    border: none;
+    font-size: 24px; /* Larger close icon */
+    cursor: pointer;
+    padding: 5px;
+    color: #777; /* Gray color */
+    transition: color 0.3s ease; /* Smooth hover effect */
+}
+
+#close-side-menu:hover {
+    color: #333; /* Darker gray on hover */
+}
+
+#side-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#side-menu li {
+    margin-bottom: 10px;
+}
+
+#side-menu a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+    padding: 10px 15px; /* More padding */
+    border-radius: 5px;
+    transition: background-color 0.2s ease, color 0.2s ease; /* Smooth transitions */
+}
+
+#side-menu a:hover {
+    background-color: #eee; /* Light gray hover */
+    color: #000; /* Black text on hover */
+}
+
+#overlay {
+    /* ... (No changes needed) ... */
+}
+
+/* Media query (adjust as needed) */
+@media (max-width: 768px) {
+    #side-menu-button {
+        /* ... (Adjust button styles for smaller screens) ... */
+    }
+
+    #side-menu {
+        width: 90%; /* Take up more width on smaller screens */
+    }
+
+    /* ... (Other media query styles) ... */
+}
+    </style>
+</head>
+<body>
+
+    <div id="chat-container">
+        <h1>AI Financial Advisor</h1>
+        <div id="chat-messages">
+            </div>
+        <input type="text" id="chat-input" placeholder="Ask your financial question...">
+        <button id="send-button">Send</button>
+    </div>
+    <button id="side-menu-button">☰ Menu</button>
+
+    <div id="side-menu">
+        <div id="side-menu-header">
+            <button id="close-side-menu">×</button>
+        </div>
+        <ul id="side-menu-items">
+            <li><a href="index.html">Home</a></li>  <li><a href="#">Transactions</a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Settings</a></li>
+            <li><a href="RecycleBin.html">View Recycle Bin</a></li>
+            <li><a href="#">Chat with AI Advisor</a></li>
+            <li><a href="#logout">Logout</a></li>
+        </ul>
+    </div>
+
+    <div id="overlay"></div>
+
+    <div id="chat-container">
+
+    <script>
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+
+        sendButton.addEventListener('click', async () => {
+            const userMessage = chatInput.value.trim();
+            if (userMessage === "") return;
+
+            displayMessage("user", userMessage); // Display user message
+            chatInput.value = ""; // Clear input field
+
+            try {
+                const aiResponse = await getAIResponse(userMessage); // Call your API function
+                displayMessage("ai", aiResponse); // Display AI response
+            } catch (error) {
+                console.error("Error fetching AI response:", error);
+                displayMessage("ai", "Sorry, I'm currently unable to respond.");
+            }
+        });
+
+        chatInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                sendButton.click(); // Trigger send button click on Enter key
+            }
+        });
+
+        function displayMessage(sender, message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', `${sender}-message`);
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+
+            // Scroll to bottom to show new messages
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function getAIResponse(userMessage) {
+                const API_KEY = "LC8lMwo5ssPAEcwmaN7aR3Q0230rQX5h"; // Replace with your actual API key
+                const API_URL = "https://api.mistral.ai/v1/chat/completions";
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${API_KEY}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            model: "mistral-tiny", // Free model, you can change it
+                            messages: [{ role: "user", content: userMessage }]
+                        })
+                    });
+
+                    const data = await response.json();
+                    return data.choices[0].message.content;
+                } catch (error) {
+                    console.error("Error:", error);
+                    return "Sorry, I couldn't fetch a response. Try again later!";
+                }
+            }
+
+            // Side Menu JavaScript (same as in index.html)
+        const sideMenuButton = document.getElementById('side-menu-button');
+        const sideMenu = document.getElementById('side-menu');
+        const closeSideMenuButton = document.getElementById('close-side-menu');
+        const sideMenuItems = document.getElementById('side-menu-items');
+        const overlay = document.getElementById('overlay');
+
+        sideMenuButton.addEventListener('click', () => {
+            sideMenu.classList.add('show');
+            overlay.classList.add('show');
+        });
+
+        closeSideMenuButton.addEventListener('click', () => {
+            sideMenu.classList.remove('show');
+            overlay.classList.remove('show');
+        });
+
+        overlay.addEventListener('click', () => {
+            sideMenu.classList.remove('show');
+            overlay.classList.remove('show');
+        });
+
+        // Logout functionality (same as in index.html)
+        const logoutLink = sideMenuItems.querySelector('a[href="#logout"]');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                auth.signOut().then(() => {
+                    window.location.href = "auth.html";
+                }).catch((error) => {
+                    console.error("Error signing out:", error);
+                });
+            });
+        }
+    </script>
+
+</body>
+</html>
