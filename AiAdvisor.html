@@ -185,8 +185,8 @@
             <li><a href="#">Reports</a></li>
             <li><a href="#">Settings</a></li>
             <li><a href="RecycleBin.html">View Recycle Bin</a></li>
-            <li><a href="#">Chat with AI Advisor</a></li>
-            <li><a href="#logout">Logout</a></li>
+            <li><a href="AiAdvisor.html">Chat with AI Advisor</a></li>
+            
         </ul>
     </div>
 
@@ -279,17 +279,17 @@
         });
 
         // Logout functionality (same as in index.html)
-        const logoutLink = sideMenuItems.querySelector('a[href="#logout"]');
-        if (logoutLink) {
-            logoutLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                auth.signOut().then(() => {
-                    window.location.href = "auth.html";
-                }).catch((error) => {
-                    console.error("Error signing out:", error);
-                });
-            });
-        }
+        //const logoutLink = sideMenuItems.querySelector('a[href="#logout"]');
+       // if (logoutLink) {
+         //   logoutLink.addEventListener('click', (event) => {
+          //      event.preventDefault();
+          //      auth.signOut().then(() => {
+               //     window.location.href = "auth.html";
+             //   }).catch((error) => {
+                //    console.error("Error signing out:", error);
+             //   });
+          //  });
+       // }
     </script>
 
 </body>
